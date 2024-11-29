@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card p-4">
+    <h1 class="card-title text-center mb-3">Rögzíts egy óraállást</h1>
+    <form method="POST" class="mt-3">
+        <div class="mb-3">
+            <label for="date" class="form-label" style="font-size: 1.1rem; font-weight: 600; color: #e0e7ff;">📅 Dátum:</label>
+            <input type="date" id="date" name="date" class="form-control" required style="cursor: pointer;">
+        </div>
+        <div class="mb-3">
+            <label for="reading" class="form-label" style="font-size: 1.1rem; font-weight: 600; color: #e0e7ff;">⚡ Óraállás (m³):</label>
+            <input type="number" id="reading" step="0.01" name="reading" class="form-control" required placeholder="Add meg az óraállást!">
+        </div>
+        <button type="submit" class="btn btn-primary w-100">Rögzítés</button>
+    </form>
+</div>
+
+<div class="card p-4 mt-5">
+    <h2 class="card-title">Rögzített óraállások</h2>
+    <div class="accordion" id="recordAccordion">
+        <div class="accordion-item">
+            <h2 class="accordion-header" id="headingOne">
+                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                    Mutasd a rögzített óraállásokat
+                </button>
+            </h2>
+            <div id="collapseOne" class="accordion-collapse collapse show" aria-labelledby="headingOne" data-bs-parent="#recordAccordion">
+                <div class="accordion-body">
+                    <table class="table table-dark table-striped">
+                        <thead>
+                            <tr>
+                                <th scope="col">Rögzítés Dátuma</th>
+                                <th scope="col">Mérőállás (m³)</th>
+                                <th scope="col">Műveletek</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for reading in readings %}
+                                <tr>
+                                    <td>{{ reading.date }}</td>
+                                    <td>{{ reading.reading }}</td>
+                                    <td>
+                                        <a href="/edit/{{ reading.id }}" class="btn btn-sm btn-primary">Szerkesztés</a>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card p-4">
+    <h1 class="card-title text-center">Fogyasztási Riport</h1>
+    <form method="POST" class="mt-3">
+        <div class="mb-3">
+            <label for="year" class="form-label">Év:</label>
+            <input type="number" name="year" class="form-control" placeholder="Pl. 2024" required>
+        </div>
+        <div class="mb-3">
+            <label for="month" class="form-label">Hónap:</label>
+            <input type="number" name="month" class="form-control" placeholder="1-12" required>
+        </div>
+        <button type="submit" class="btn btn-primary w-100">Riport generálása</button>
+    </form>
+</div>
+
+{% if consumption is not none %}
+<div class="card p-4 mt-5">
+    <h2 class="card-title">Fogyasztás eredménye</h2>
+    <p class="mt-3">
+        <strong>{{ year }}.{{ month }} havi fogyasztás:</strong> {{ consumption }} m³
+    </p>
+</div>
+{% endif %}
+{% endblock %}
