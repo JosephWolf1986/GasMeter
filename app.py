@@ -103,6 +103,82 @@ def logout():
     flash("Sikeres kijelentkezés!", "success")
     return redirect(url_for("login"))
 
+# Óraállás szerkesztése
+@app.route("/edit/<int:id>", methods=["GET", "POST"])
+def edit(id):
+    reading = GasMeterReading.query.get_or_404(id)
+
+    if request.method == "POST":
+        date_str = request.form.get("date")
+        new_reading = request.form.get("reading")
+
+        if not date_str or not new_reading:
+            flash("Minden mezőt ki kell tölteni!", "danger")
+        else:
+            try:
+                date = datetime.strptime(date_str, "%Y-%m-%d").date()
+                new_reading = float(new_reading)
+
+                # Ellenőrzés: Van-e másik rögzítés ugyanarra a hónapra
+                existing_reading = GasMeterReading.query.filter(
+                    db.extract('year', GasMeterReading.date) == date.year,
+                    db.extract('month', GasMeterReading.date) == date.month,
+                    GasMeterReading.id != id
+                ).first()
+
+                if existing_reading:
+                    flash(f"Ebben a hónapban már van rögzített óraállás ({existing_reading.reading} m³).", "warning")
+                else:
+                    reading.date = date
+                    reading.reading = new_reading
+                    db.session.commit()
+                    flash("Óraállás sikeresen frissítve!", "success")
+                    return redirect(url_for("index"))
+            except ValueError:
+                flash("Érvényes adatokat adj meg!", "danger")
+
+    return render_template("edit.html", reading=reading)
+
+# Riport oldal
+@app.route("/report", methods=["GET", "POST"])
+def report():
+    consumption = None
+    year, month = None, None
+
+    if request.method == "POST":
+        year = request.form.get("year")
+        month = request.form.get("month")
+
+        if not year or not month:
+            flash("Minden mezőt ki kell tölteni!", "danger")
+        else:
+            try:
+                year = int(year)
+                month = int(month)
+
+                # Keresési időszak meghatározása
+                start_date = datetime(year, month, 1)
+                if month == 12:
+                    end_date = datetime(year + 1, 1, 1)
+                else:
+                    end_date = datetime(year, month + 1, 30)
+
+                # Lekérdezések az adott időszakra
+                readings = GasMeterReading.query.filter(
+                    GasMeterReading.date >= start_date,
+                    GasMeterReading.date < end_date
+                ).order_by(GasMeterReading.date).all()
+
+                if len(readings) >= 2:
+                    consumption = readings[-1].reading - readings[0].reading
+                else:
+                    flash("Nincs elég adat az adott időszakra.", "warning")
+
+            except ValueError:
+                flash("Érvényes év és hónap kell!", "danger")
+
+    return render_template("report.html", consumption=consumption, year=year, month=month)
+
 # Alkalmazás futtatása
 if __name__ == "__main__":
     app.run(debug=True)
